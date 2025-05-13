@@ -15,8 +15,8 @@ const formSchema = z.object({
   password: z.string().min(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' }),
   confirmPassword: z.string(),
   accountType: z.enum(['client', 'professional']),
-  termsAgreed: z.literal(true, {
-    errorMap: () => ({ message: 'يجب الموافقة على الشروط والأحكام' }),
+  termsAgreed: z.boolean().refine(val => val === true, {
+    message: 'يجب الموافقة على الشروط والأحكام',
   }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'كلمة المرور غير متطابقة',
