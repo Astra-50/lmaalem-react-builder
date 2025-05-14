@@ -1,15 +1,13 @@
 
 import { createClient } from '@supabase/supabase-js';
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
 
-// These would typically come from environment variables
-const supabaseUrl = 'https://your-supabase-url.supabase.co';
-const supabaseAnonKey = 'your-supabase-anon-key';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Re-export the supabase client from the integrations folder
+export const supabase = supabaseClient;
 
 // Example of a type for jobs
 export type Job = {
-  id: number;
+  id: string;
   title: string;
   description: string;
   city: string;
@@ -22,9 +20,18 @@ export type Job = {
 // Function to submit a new job
 export async function submitJob(job: Omit<Job, 'id' | 'created_at' | 'user_id'>) {
   try {
+    const { data: session } = await supabase.auth.getSession();
+    
+    if (!session.session) {
+      throw new Error('User must be logged in to submit a job');
+    }
+    
     const { data, error } = await supabase
       .from('jobs')
-      .insert([job])
+      .insert([{
+        ...job,
+        user_id: session.session.user.id
+      }])
       .select();
     
     if (error) throw error;

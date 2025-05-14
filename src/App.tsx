@@ -10,6 +10,8 @@ import PostJob from "./pages/PostJob";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import HandymanProfile from "./pages/HandymanProfile";
+import JobsPage from "./pages/jobs/index";
+import JobDetailPage from "./pages/jobs/[id]";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/handyman/:id" element={<HandymanProfile />} />
+          <Route path="/jobs" element={<JobsPage />} />
+          <Route path="/jobs/:id" element={<JobDetailPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
