@@ -55,8 +55,7 @@ const HandymanProfile = () => {
   }, [id]);
 
   const handleContactClick = () => {
-    toast({
-      title: "قريبا!",
+    toast("قريبا!", {
       description: "سيتم تفعيل خاصية التواصل مع المعلمين قريباً",
     });
   };
