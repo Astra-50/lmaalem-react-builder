@@ -93,10 +93,8 @@ const Profile = () => {
 
         if (error) {
           console.error('Error fetching profile:', error);
-          toast({
-            title: "خطأ",
-            description: "حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى",
-            variant: "destructive",
+          toast("خطأ", {
+            description: "حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى"
           });
           return;
         }
@@ -116,10 +114,8 @@ const Profile = () => {
         }
       } catch (error) {
         console.error('Error:', error);
-        toast({
-          title: "خطأ",
-          description: "حدث خطأ في النظام. يرجى المحاولة مرة أخرى",
-          variant: "destructive",
+        toast("خطأ", {
+          description: "حدث خطأ في النظام. يرجى المحاولة مرة أخرى"
         });
       } finally {
         setLoading(false);
@@ -162,17 +158,14 @@ const Profile = () => {
 
         if (updateError) throw updateError;
 
-        toast({
-          title: "تم التحديث",
-          description: "تم تحديث صورة الملف الشخصي بنجاح",
+        toast("تم التحديث", {
+          description: "تم تحديث صورة الملف الشخصي بنجاح"
         });
       }
     } catch (error) {
       console.error('Error uploading avatar:', error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء رفع الصورة. يرجى المحاولة مرة أخرى",
-        variant: "destructive",
+      toast("خطأ", {
+        description: "حدث خطأ أثناء رفع الصورة. يرجى المحاولة مرة أخرى"
       });
     } finally {
       setUploading(false);
@@ -198,16 +191,13 @@ const Profile = () => {
 
       if (error) throw error;
 
-      toast({
-        title: "تم التحديث",
-        description: "تم تحديث بيانات الملف الشخصي بنجاح",
+      toast("تم التحديث", {
+        description: "تم تحديث بيانات الملف الشخصي بنجاح"
       });
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast({
-        title: "خطأ",
-        description: "حدث خطأ أثناء تحديث البيانات. يرجى المحاولة مرة أخرى",
-        variant: "destructive",
+      toast("خطأ", {
+        description: "حدث خطأ أثناء تحديث البيانات. يرجى المحاولة مرة أخرى"
       });
     } finally {
       setLoading(false);
