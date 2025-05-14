@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,6 +28,10 @@ const Navbar = () => {
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const toggleUserMenu = () => {
+    setUserMenuOpen(!userMenuOpen);
   };
 
   const handleLogout = async () => {
@@ -61,30 +66,40 @@ const Navbar = () => {
             <a href="/#how-it-works" className="text-gray-700 hover:text-blue-600">كيف تعمل</a>
             
             {isLoggedIn ? (
-              <div className="dropdown relative">
-                <button className="text-gray-700 hover:text-blue-600 flex items-center">
+              <div className="relative">
+                <button 
+                  className="text-gray-700 hover:text-blue-600 flex items-center"
+                  onClick={toggleUserMenu}
+                >
                   <span>حسابي</span>
                   <i className="fas fa-chevron-down mr-1 text-sm"></i>
                 </button>
-                <div className="dropdown-menu absolute hidden right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                  <Link to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">الملف الشخصي</Link>
-                  <Link to="/my-jobs" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">مهامي</Link>
-                  <div className="border-t border-gray-200"></div>
-                  <button onClick={handleLogout} className="w-full text-right block px-4 py-2 text-gray-700 hover:bg-blue-50">تسجيل الخروج</button>
-                </div>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <Link to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">الملف الشخصي</Link>
+                    <Link to="/my-jobs" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">مهامي</Link>
+                    <div className="border-t border-gray-200"></div>
+                    <button onClick={handleLogout} className="w-full text-right block px-4 py-2 text-gray-700 hover:bg-blue-50">تسجيل الخروج</button>
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="dropdown relative">
-                <button className="text-gray-700 hover:text-blue-600 flex items-center">
+              <div className="relative">
+                <button 
+                  className="text-gray-700 hover:text-blue-600 flex items-center"
+                  onClick={toggleUserMenu}
+                >
                   <span>الدخول</span>
                   <i className="fas fa-chevron-down mr-1 text-sm"></i>
                 </button>
-                <div className="dropdown-menu absolute hidden right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                  <Link to="/login" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">تسجيل الدخول</Link>
-                  <Link to="/signup" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">إنشاء حساب</Link>
-                  <div className="border-t border-gray-200"></div>
-                  <a href="#" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">للمحترفين</a>
-                </div>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <Link to="/login" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">تسجيل الدخول</Link>
+                    <Link to="/signup" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">إنشاء حساب</Link>
+                    <div className="border-t border-gray-200"></div>
+                    <a href="#" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">للمحترفين</a>
+                  </div>
+                )}
               </div>
             )}
             
