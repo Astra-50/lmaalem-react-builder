@@ -1,11 +1,16 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Loader } from 'lucide-react';
+import { Loader, CheckCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from '@/hooks/use-toast';
 
 type Job = {
   id: string;
@@ -18,10 +23,38 @@ type Job = {
   user_id: string;
 };
 
+type Application = {
+  id: string;
+  job_id: string;
+  user_id: string;
+  message: string;
+  proposed_budget: number;
+  status: string;
+  created_at: string;
+  profile?: {
+    full_name: string;
+    city: string;
+    category: string;
+    avatar_url: string;
+  };
+};
+
+type Profile = {
+  id: string;
+  full_name: string | null;
+  city: string | null;
+  category: string | null;
+  avatar_url: string | null;
+};
+
 const JobDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [isJobOwner, setIsJobOwner] = useState(false);
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [isLoadingApplications, setIsLoadingApplications] = useState(false);
   
+  // Fetch job details
   const { data: job, isLoading, error } = useQuery({
     queryKey: ['job', id],
     queryFn: async () => {
@@ -44,6 +77,90 @@ const JobDetailPage: React.FC = () => {
       return data as Job;
     }
   });
+
+  // Check if current user is job owner and fetch applications if they are
+  useEffect(() => {
+    if (!job) return;
+
+    const checkOwnership = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user && job.user_id === user.id) {
+        setIsJobOwner(true);
+        fetchApplications();
+      } else {
+        setIsJobOwner(false);
+      }
+    };
+
+    checkOwnership();
+  }, [job]);
+
+  const fetchApplications = async () => {
+    if (!id) return;
+    
+    setIsLoadingApplications(true);
+    try {
+      // Fetch applications with profiles
+      const { data, error } = await supabase
+        .from('applications')
+        .select(`
+          *,
+          profile:user_id (
+            full_name,
+            city,
+            category,
+            avatar_url
+          )
+        `)
+        .eq('job_id', id);
+
+      if (error) throw error;
+      setApplications(data as Application[]);
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحميل العروض",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingApplications(false);
+    }
+  };
+
+  const handleAcceptApplication = async (applicationId: string) => {
+    try {
+      // Update status to accepted
+      const { error } = await supabase
+        .from('applications')
+        .update({ status: 'accepted' })
+        .eq('id', applicationId)
+        .eq('job_id', id);
+      
+      if (error) throw error;
+      
+      // Update local state to reflect the change
+      setApplications(prevApps => 
+        prevApps.map(app => 
+          app.id === applicationId ? { ...app, status: 'accepted' } : app
+        )
+      );
+      
+      toast({
+        title: "تم قبول العرض",
+        description: "تم قبول عرض الحرفي بنجاح",
+      });
+      
+    } catch (error) {
+      console.error('Error accepting application:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء قبول العرض",
+        variant: "destructive"
+      });
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ar-MA', { style: 'currency', currency: 'MAD' })
@@ -162,14 +279,113 @@ const JobDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="mt-10 pt-6 border-t border-gray-200">
-                <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg w-full md:w-auto transition">
-                  <i className="fas fa-paper-plane ml-2"></i>
-                  قدم عرضك
-                </button>
-              </div>
+              {!isJobOwner && (
+                <div className="mt-10 pt-6 border-t border-gray-200">
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg w-full md:w-auto transition">
+                    <i className="fas fa-paper-plane ml-2"></i>
+                    قدم عرضك
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+          
+          {/* Applications section - visible only to job owner */}
+          {isJobOwner && (
+            <div className="mt-8">
+              <div className="bg-white rounded-xl shadow-md overflow-hidden">
+                <div className="p-8">
+                  <h2 className="text-xl font-bold mb-6">العروض المقدمة</h2>
+                  
+                  {isLoadingApplications ? (
+                    <div className="space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex items-start gap-4 p-4 border border-gray-100 rounded-lg">
+                          <Skeleton className="h-12 w-12 rounded-full" />
+                          <div className="flex-1 space-y-2">
+                            <Skeleton className="h-4 w-1/3" />
+                            <Skeleton className="h-4 w-1/4" />
+                            <Skeleton className="h-20 w-full" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : applications.length === 0 ? (
+                    <div className="text-center py-10 text-gray-500">
+                      <p className="text-lg">لا توجد عروض بعد</p>
+                      <p className="mt-2">سيظهر هنا العروض المقدمة من الحرفيين</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {applications.map((application) => (
+                        <Card key={application.id} className={`overflow-hidden ${application.status === 'accepted' ? 'border-green-500 border-2' : ''}`}>
+                          <CardContent className="p-0">
+                            <div className="p-6">
+                              <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
+                                <Avatar className="h-14 w-14 border">
+                                  <AvatarImage src={application.profile?.avatar_url || ''} alt={application.profile?.full_name || ''} />
+                                  <AvatarFallback>{application.profile?.full_name?.[0] || '?'}</AvatarFallback>
+                                </Avatar>
+                                
+                                <div className="flex-1">
+                                  <div className="flex justify-between flex-wrap gap-2">
+                                    <div>
+                                      <h3 className="font-bold text-lg">{application.profile?.full_name || 'حرفي'}</h3>
+                                      <div className="text-gray-600 text-sm flex flex-wrap gap-x-4 mt-1">
+                                        {application.profile?.city && (
+                                          <span>
+                                            <i className="fas fa-map-marker-alt ml-1"></i>
+                                            {application.profile.city}
+                                          </span>
+                                        )}
+                                        {application.profile?.category && (
+                                          <span>
+                                            <i className="fas fa-briefcase ml-1"></i>
+                                            {application.profile.category}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="text-green-600 font-bold text-lg">
+                                      {formatCurrency(application.proposed_budget)}
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="mt-4 bg-gray-50 p-4 rounded-md text-gray-700">
+                                    {application.message}
+                                  </div>
+                                  
+                                  <div className="mt-4 flex justify-between items-center">
+                                    <div className="text-gray-500 text-sm">
+                                      {formatDate(application.created_at)}
+                                    </div>
+                                    
+                                    {application.status === 'accepted' ? (
+                                      <div className="flex items-center text-green-600">
+                                        <CheckCircle className="w-5 h-5 ml-2" />
+                                        <span>تم القبول</span>
+                                      </div>
+                                    ) : (
+                                      <Button 
+                                        onClick={() => handleAcceptApplication(application.id)}
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        قبول العرض
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       

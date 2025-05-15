@@ -17,6 +17,17 @@ export type Job = {
   user_id?: string;
 };
 
+// Type for applications
+export type Application = {
+  id: string;
+  job_id: string;
+  user_id: string;
+  message: string;
+  proposed_budget: number;
+  status: string;
+  created_at: string;
+};
+
 // Function to submit a new job
 export async function submitJob(job: Omit<Job, 'id' | 'created_at' | 'user_id'>) {
   try {
@@ -55,4 +66,69 @@ export async function fetchJobs() {
   }
   
   return data as Job[];
+}
+
+// Function to submit a job application
+export async function submitApplication(application: Omit<Application, 'id' | 'created_at' | 'status' | 'user_id'>) {
+  try {
+    const { data: session } = await supabase.auth.getSession();
+    
+    if (!session.session) {
+      throw new Error('User must be logged in to submit an application');
+    }
+    
+    const { data, error } = await supabase
+      .from('applications')
+      .insert([{
+        ...application,
+        status: 'pending',
+        user_id: session.session.user.id
+      }])
+      .select();
+    
+    if (error) throw error;
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error submitting application:', error);
+    return { data: null, error };
+  }
+}
+
+// Function to fetch applications for a specific job
+export async function fetchApplicationsForJob(jobId: string) {
+  const { data, error } = await supabase
+    .from('applications')
+    .select(`
+      *,
+      profile:user_id (
+        full_name,
+        city,
+        category,
+        avatar_url
+      )
+    `)
+    .eq('job_id', jobId);
+  
+  if (error) {
+    console.error('Error fetching applications:', error);
+    throw error;
+  }
+  
+  return data;
+}
+
+// Function to accept an application
+export async function acceptApplication(applicationId: string) {
+  const { data, error } = await supabase
+    .from('applications')
+    .update({ status: 'accepted' })
+    .eq('id', applicationId)
+    .select();
+  
+  if (error) {
+    console.error('Error accepting application:', error);
+    throw error;
+  }
+  
+  return data;
 }
