@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
+import { fetchApplicationsForJob, Application } from '@/lib/supabase';
 
 type Job = {
   id: string;
@@ -21,30 +22,6 @@ type Job = {
   budget: number;
   created_at: string;
   user_id: string;
-};
-
-type Application = {
-  id: string;
-  job_id: string;
-  user_id: string;
-  message: string;
-  proposed_budget: number;
-  status: string;
-  created_at: string;
-  profile?: {
-    full_name: string;
-    city: string;
-    category: string;
-    avatar_url: string;
-  };
-};
-
-type Profile = {
-  id: string;
-  full_name: string | null;
-  city: string | null;
-  category: string | null;
-  avatar_url: string | null;
 };
 
 const JobDetailPage: React.FC = () => {
@@ -102,21 +79,8 @@ const JobDetailPage: React.FC = () => {
     setIsLoadingApplications(true);
     try {
       // Fetch applications with profiles
-      const { data, error } = await supabase
-        .from('applications')
-        .select(`
-          *,
-          profile:user_id (
-            full_name,
-            city,
-            category,
-            avatar_url
-          )
-        `)
-        .eq('job_id', id);
-
-      if (error) throw error;
-      setApplications(data as Application[]);
+      const data = await fetchApplicationsForJob(id);
+      setApplications(data);
     } catch (error) {
       console.error('Error fetching applications:', error);
       toast({

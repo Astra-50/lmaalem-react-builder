@@ -26,6 +26,12 @@ export type Application = {
   proposed_budget: number;
   status: string;
   created_at: string;
+  profile?: {
+    full_name: string | null;
+    city: string | null;
+    category: string | null;
+    avatar_url: string | null;
+  };
 };
 
 // Function to submit a new job
@@ -100,12 +106,7 @@ export async function fetchApplicationsForJob(jobId: string) {
     .from('applications')
     .select(`
       *,
-      profile:user_id (
-        full_name,
-        city,
-        category,
-        avatar_url
-      )
+      profiles(full_name, city, category, avatar_url)
     `)
     .eq('job_id', jobId);
   
@@ -114,7 +115,18 @@ export async function fetchApplicationsForJob(jobId: string) {
     throw error;
   }
   
-  return data;
+  // Transform the data to match our Application type
+  const transformedData: Application[] = data.map(app => ({
+    ...app,
+    profile: app.profiles || {
+      full_name: null,
+      city: null,
+      category: null,
+      avatar_url: null
+    }
+  }));
+  
+  return transformedData;
 }
 
 // Function to accept an application
