@@ -12,32 +12,39 @@ export type Database = {
       applications: {
         Row: {
           created_at: string
+          handyman_id: string
           id: string
           job_id: string
           message: string
           proposed_budget: number
           status: string
-          user_id: string
         }
         Insert: {
           created_at?: string
+          handyman_id: string
           id?: string
           job_id: string
           message: string
           proposed_budget: number
           status?: string
-          user_id: string
         }
         Update: {
           created_at?: string
+          handyman_id?: string
           id?: string
           job_id?: string
           message?: string
           proposed_budget?: number
           status?: string
-          user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "applications_handyman_id_fkey"
+            columns: ["handyman_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "applications_job_id_fkey"
             columns: ["job_id"]

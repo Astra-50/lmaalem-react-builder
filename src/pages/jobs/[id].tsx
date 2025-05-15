@@ -287,25 +287,25 @@ const JobDetailPage: React.FC = () => {
                             <div className="p-6">
                               <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
                                 <Avatar className="h-14 w-14 border">
-                                  <AvatarImage src={application.profile?.avatar_url || ''} alt={application.profile?.full_name || ''} />
-                                  <AvatarFallback>{application.profile?.full_name?.[0] || '?'}</AvatarFallback>
+                                  <AvatarImage src={application.profiles?.avatar_url || ''} alt={application.profiles?.full_name || ''} />
+                                  <AvatarFallback>{application.profiles?.full_name?.[0] || '?'}</AvatarFallback>
                                 </Avatar>
                                 
                                 <div className="flex-1">
                                   <div className="flex justify-between flex-wrap gap-2">
                                     <div>
-                                      <h3 className="font-bold text-lg">{application.profile?.full_name || 'حرفي'}</h3>
+                                      <h3 className="font-bold text-lg">{application.profiles?.full_name || 'حرفي'}</h3>
                                       <div className="text-gray-600 text-sm flex flex-wrap gap-x-4 mt-1">
-                                        {application.profile?.city && (
+                                        {application.profiles?.city && (
                                           <span>
                                             <i className="fas fa-map-marker-alt ml-1"></i>
-                                            {application.profile.city}
+                                            {application.profiles.city}
                                           </span>
                                         )}
-                                        {application.profile?.category && (
+                                        {application.profiles?.category && (
                                           <span>
                                             <i className="fas fa-briefcase ml-1"></i>
-                                            {application.profile.category}
+                                            {application.profiles.category}
                                           </span>
                                         )}
                                       </div>
