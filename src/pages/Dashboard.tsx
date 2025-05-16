@@ -10,12 +10,17 @@ import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { UserProfile, Job, Application } from '@/lib/supabase';
 
+// Define an extended type for Application with jobs field
+interface ApplicationWithJob extends Application {
+  jobs?: Job;
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
+  const [applications, setApplications] = useState<ApplicationWithJob[]>([]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -82,7 +87,7 @@ const Dashboard = () => {
             .order('created_at', { ascending: false });
           
           if (applicationError) throw applicationError;
-          setApplications(handymanApplications as Application[]);
+          setApplications(handymanApplications as ApplicationWithJob[]);
         }
       } catch (error) {
         console.error('Error loading dashboard:', error);
@@ -305,27 +310,24 @@ const Dashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {applications.map((app) => {
-                          const job = app.jobs as unknown as Job;
-                          return (
-                            <TableRow key={app.id}>
-                              <TableCell className="font-medium">{job?.title}</TableCell>
-                              <TableCell>{job?.city}</TableCell>
-                              <TableCell>{app.proposed_budget} درهم</TableCell>
-                              <TableCell>{getStatusBadge(app.status)}</TableCell>
-                              <TableCell>{formatDate(app.created_at)}</TableCell>
-                              <TableCell>
-                                <Button 
-                                  variant="outline" 
-                                  onClick={() => navigate(`/jobs/${app.job_id}`)}
-                                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                                >
-                                  عرض
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
+                        {applications.map((app) => (
+                          <TableRow key={app.id}>
+                            <TableCell className="font-medium">{app.jobs?.title || 'المهمة غير متوفرة'}</TableCell>
+                            <TableCell>{app.jobs?.city || '-'}</TableCell>
+                            <TableCell>{app.proposed_budget} درهم</TableCell>
+                            <TableCell>{getStatusBadge(app.status)}</TableCell>
+                            <TableCell>{formatDate(app.created_at)}</TableCell>
+                            <TableCell>
+                              <Button 
+                                variant="outline" 
+                                onClick={() => navigate(`/jobs/${app.job_id}`)}
+                                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                              >
+                                عرض
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
                   </div>
