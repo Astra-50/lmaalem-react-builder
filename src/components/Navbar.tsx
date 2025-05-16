@@ -76,8 +76,8 @@ const Navbar = () => {
                 </button>
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                    <Link to="/dashboard" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">لوحة التحكم</Link>
                     <Link to="/profile" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">الملف الشخصي</Link>
-                    <Link to="/my-jobs" className="block px-4 py-2 text-gray-700 hover:bg-blue-50">مهامي</Link>
                     <div className="border-t border-gray-200"></div>
                     <button onClick={handleLogout} className="w-full text-right block px-4 py-2 text-gray-700 hover:bg-blue-50">تسجيل الخروج</button>
                   </div>
@@ -119,8 +119,8 @@ const Navbar = () => {
           
           {isLoggedIn ? (
             <>
+              <Link to="/dashboard" className="block py-2 text-gray-700 hover:text-blue-600">لوحة التحكم</Link>
               <Link to="/profile" className="block py-2 text-gray-700 hover:text-blue-600">الملف الشخصي</Link>
-              <Link to="/my-jobs" className="block py-2 text-gray-700 hover:text-blue-600">مهامي</Link>
               <button onClick={handleLogout} className="block w-full text-right py-2 text-gray-700 hover:text-blue-600">تسجيل الخروج</button>
             </>
           ) : (

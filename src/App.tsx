@@ -13,6 +13,7 @@ import HandymanProfile from "./pages/handyman/[id]";
 import JobsPage from "./pages/jobs/index";
 import JobDetailPage from "./pages/jobs/[id]";
 import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/handyman/:id" element={<HandymanProfile />} />
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/jobs/:id" element={<JobDetailPage />} />
