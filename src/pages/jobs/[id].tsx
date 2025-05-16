@@ -11,7 +11,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
-import { fetchApplicationsForJob, Application } from '@/lib/supabase';
+import { fetchApplicationsForJob, Application, isUserHandyman } from '@/lib/supabase';
+import ApplyJobForm from '@/components/ApplyJobForm';
 
 type Job = {
   id: string;
@@ -28,6 +29,8 @@ const JobDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isJobOwner, setIsJobOwner] = useState(false);
+  const [isHandyman, setIsHandyman] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoadingApplications, setIsLoadingApplications] = useState(false);
   
@@ -57,20 +60,31 @@ const JobDetailPage: React.FC = () => {
 
   // Check if current user is job owner and fetch applications if they are
   useEffect(() => {
-    if (!job) return;
-
-    const checkOwnership = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+    const checkUserStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (user && job.user_id === user.id) {
-        setIsJobOwner(true);
-        fetchApplications();
+      setIsLoggedIn(!!session);
+      
+      if (session && job) {
+        // Check if user is job owner
+        setIsJobOwner(session.user.id === job.user_id);
+        
+        // Check if user is a handyman
+        const handymanStatus = await isUserHandyman();
+        setIsHandyman(handymanStatus);
+        
+        // If user is job owner, fetch applications
+        if (session.user.id === job.user_id) {
+          fetchApplications();
+        }
       } else {
         setIsJobOwner(false);
       }
     };
 
-    checkOwnership();
+    if (job) {
+      checkUserStatus();
+    }
   }, [job]);
 
   const fetchApplications = async () => {
@@ -243,12 +257,21 @@ const JobDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              {!isJobOwner && (
+              {isLoggedIn && isHandyman && !isJobOwner && (
                 <div className="mt-10 pt-6 border-t border-gray-200">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg w-full md:w-auto transition">
-                    <i className="fas fa-paper-plane ml-2"></i>
-                    قدم عرضك
-                  </button>
+                  <ApplyJobForm jobId={job.id} />
+                </div>
+              )}
+              
+              {!isLoggedIn && (
+                <div className="mt-10 pt-6 border-t border-gray-200 text-center">
+                  <p className="text-gray-600 mb-4">يجب عليك تسجيل الدخول كحرفي لتتمكن من تقديم عرض</p>
+                  <Button
+                    onClick={() => navigate('/login')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    تسجيل الدخول
+                  </Button>
                 </div>
               )}
             </div>
