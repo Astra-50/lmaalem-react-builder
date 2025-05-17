@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   fetchMessagesForJob, 
   sendMessage, 
@@ -97,7 +98,11 @@ const ChatPage: React.FC = () => {
         await loadMessages();
         
         // Subscribe to new messages
-        subscribeToMessages();
+        const unsubscribe = subscribeToMessages();
+        
+        return () => {
+          if (unsubscribe) unsubscribe();
+        };
         
       } catch (error) {
         console.error('Error checking access:', error);
@@ -151,12 +156,14 @@ const ChatPage: React.FC = () => {
           filter: `job_id=eq.${jobId}` 
         }, 
         async (payload) => {
+          console.log('New message received:', payload);
+          
           // Fetch the complete message with sender info
           const { data, error } = await supabase
             .from('messages')
             .select(`
               *,
-              profiles!sender_id(
+              sender_profile:sender_id(
                 full_name,
                 avatar_url
               )
@@ -165,12 +172,24 @@ const ChatPage: React.FC = () => {
             .single();
           
           if (!error && data) {
+            console.log('Fetched message with profile:', data);
             // Transform the data to match our Message type
-            const message = {
-              ...data,
-              sender_profile: data.profiles
+            const newMessage: Message = {
+              id: data.id,
+              job_id: data.job_id,
+              sender_id: data.sender_id,
+              receiver_id: data.receiver_id,
+              text: data.text,
+              created_at: data.created_at,
+              sender_profile: data.sender_profile
             };
-            setMessages(prev => [...prev, message as unknown as Message]);
+            
+            setMessages(prev => [...prev, newMessage]);
+            
+            // Force scroll to bottom for new messages
+            setTimeout(scrollToBottom, 100);
+          } else {
+            console.error('Error fetching message details:', error);
           }
         }
       )
