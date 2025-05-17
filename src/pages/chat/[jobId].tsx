@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader, Send } from 'lucide-react';
@@ -168,7 +167,7 @@ const ChatPage: React.FC = () => {
               receiver_id,
               text,
               created_at,
-              profiles:sender_id(
+              sender_profile:profiles!sender_id(
                 full_name,
                 avatar_url
               )
@@ -178,21 +177,8 @@ const ChatPage: React.FC = () => {
           
           if (!error && data) {
             console.log('Fetched message with profile:', data);
-            // Transform the data to match our Message type
-            const newMessage: Message = {
-              id: data.id,
-              job_id: data.job_id,
-              sender_id: data.sender_id,
-              receiver_id: data.receiver_id,
-              text: data.text,
-              created_at: data.created_at,
-              sender_profile: data.profiles ? {
-                full_name: data.profiles.full_name,
-                avatar_url: data.profiles.avatar_url
-              } : null
-            };
             
-            setMessages(prev => [...prev, newMessage]);
+            setMessages(prev => [...prev, data as Message]);
             
             // Force scroll to bottom for new messages
             setTimeout(scrollToBottom, 100);

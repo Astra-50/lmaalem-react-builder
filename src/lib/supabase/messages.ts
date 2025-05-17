@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from './types';
 
@@ -41,7 +40,7 @@ export async function fetchMessagesForJob(jobId: string) {
         receiver_id,
         text,
         created_at,
-        profiles:sender_id(
+        sender_profile:profiles!sender_id(
           full_name,
           avatar_url
         )
@@ -59,13 +58,10 @@ export async function fetchMessagesForJob(jobId: string) {
       receiver_id: message.receiver_id,
       text: message.text,
       created_at: message.created_at,
-      sender_profile: message.profiles ? {
-        full_name: message.profiles.full_name,
-        avatar_url: message.profiles.avatar_url
-      } : null
+      sender_profile: message.sender_profile
     }));
     
-    return messages as Message[];
+    return messages;
   } catch (error) {
     console.error('Error fetching messages:', error);
     throw error;
