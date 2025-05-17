@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -12,6 +13,7 @@ import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { UserProfile, Job, Application } from '@/lib/supabase';
 import AdminLink from '@/components/AdminLink';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 // Define an extended type for Application with jobs field
 interface ApplicationWithJob extends Application {

@@ -38,6 +38,7 @@ export type UserProfile = {
   bio: string | null;
   phone_number: string | null;
   role: string;
+  banned?: boolean | null; // Add the banned property
 };
 
 // Type for chat messages
