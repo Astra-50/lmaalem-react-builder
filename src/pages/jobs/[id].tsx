@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Loader, CheckCircle } from 'lucide-react';
+import { Loader, CheckCircle, MessageCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { supabase } from '@/integrations/supabase/client';
@@ -348,9 +347,19 @@ const JobDetailPage: React.FC = () => {
                                     </div>
                                     
                                     {application.status === 'accepted' ? (
-                                      <div className="flex items-center text-green-600">
-                                        <CheckCircle className="w-5 h-5 ml-2" />
-                                        <span>تم القبول</span>
+                                      <div className="flex space-x-2 space-x-reverse">
+                                        <div className="flex items-center text-green-600 mr-2">
+                                          <CheckCircle className="w-5 h-5 ml-2" />
+                                          <span>تم القبول</span>
+                                        </div>
+                                        
+                                        <Button 
+                                          onClick={() => navigate(`/chat/${job.id}`)}
+                                          className="bg-green-600 hover:bg-green-700"
+                                        >
+                                          <MessageCircle className="w-4 h-4 ml-2" />
+                                          محادثة
+                                        </Button>
                                       </div>
                                     ) : (
                                       <Button 
@@ -371,6 +380,24 @@ const JobDetailPage: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+          
+          {/* If user is a handyman with accepted application, show chat button */}
+          {isHandyman && !isJobOwner && applications.some(app => 
+            app.handyman_id === currentUserId && 
+            app.job_id === job.id && 
+            app.status === 'accepted'
+          ) && (
+            <div className="mt-6 flex justify-center">
+              <Button 
+                onClick={() => navigate(`/chat/${job.id}`)}
+                className="bg-green-600 hover:bg-green-700"
+                size="lg"
+              >
+                <MessageCircle className="mr-2 h-5 w-5" />
+                بدء المحادثة مع العميل
+              </Button>
             </div>
           )}
         </div>
