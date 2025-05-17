@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader, Send } from 'lucide-react';
@@ -8,13 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { 
   fetchMessagesForJob, 
   sendMessage, 
   canAccessJobChat, 
   getChatParticipantInfo, 
-  Message 
+  Message,
+  supabase
 } from '@/lib/supabase';
 
 const ChatPage: React.FC = () => {

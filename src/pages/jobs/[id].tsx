@@ -1,16 +1,21 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Loader, CheckCircle, MessageCircle } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/hooks/use-toast';
-import { fetchApplicationsForJob, Application, isUserHandyman } from '@/lib/supabase';
+import { 
+  fetchApplicationsForJob, 
+  Application, 
+  isUserHandyman,
+  supabase
+} from '@/lib/supabase';
 import ApplyJobForm from '@/components/ApplyJobForm';
 
 type Job = {
