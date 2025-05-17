@@ -32,6 +32,7 @@ const JobDetailPage: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoadingApplications, setIsLoadingApplications] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
   // Fetch job details
   const { data: job, isLoading, error } = useQuery({
@@ -65,6 +66,9 @@ const JobDetailPage: React.FC = () => {
       setIsLoggedIn(!!session);
       
       if (session && job) {
+        // Set current user ID
+        setCurrentUserId(session.user.id);
+        
         // Check if user is job owner
         setIsJobOwner(session.user.id === job.user_id);
         

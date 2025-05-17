@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader, Send } from 'lucide-react';
@@ -156,7 +155,7 @@ const ChatPage: React.FC = () => {
             .from('messages')
             .select(`
               *,
-              sender_profile:sender_id(
+              profiles!sender_id(
                 full_name,
                 avatar_url
               )
@@ -165,7 +164,12 @@ const ChatPage: React.FC = () => {
             .single();
           
           if (!error && data) {
-            setMessages(prev => [...prev, data as Message]);
+            // Transform the data to match our Message type
+            const message = {
+              ...data,
+              sender_profile: data.profiles
+            };
+            setMessages(prev => [...prev, message as unknown as Message]);
           }
         }
       )

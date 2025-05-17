@@ -56,7 +56,7 @@ export type Message = {
   sender_profile?: {
     full_name: string | null;
     avatar_url: string | null;
-  };
+  } | null;
 };
 
 // Function to submit a new job
@@ -259,11 +259,12 @@ export async function sendMessage(jobId: string, receiverId: string, text: strin
 // Function to get all messages for a job
 export async function fetchMessagesForJob(jobId: string) {
   try {
+    // Modified query to correctly select profiles data
     const { data, error } = await supabase
       .from('messages')
       .select(`
         *,
-        sender_profile:sender_id(
+        profiles!sender_id(
           full_name,
           avatar_url
         )
@@ -272,7 +273,14 @@ export async function fetchMessagesForJob(jobId: string) {
       .order('created_at', { ascending: true });
     
     if (error) throw error;
-    return data as Message[];
+    
+    // Transform the data to match our expected Message type
+    const messages = data.map(message => ({
+      ...message,
+      sender_profile: message.profiles
+    }));
+    
+    return messages as unknown as Message[];
   } catch (error) {
     console.error('Error fetching messages:', error);
     throw error;
