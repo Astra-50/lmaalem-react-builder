@@ -11,13 +11,14 @@ import { supabase } from '@/integrations/supabase/client';
 import Footer from '@/components/Footer';
 import Navbar from '@/components/Navbar';
 import { UserProfile, Job, Application } from '@/lib/supabase';
+import AdminLink from '@/components/AdminLink';
 
 // Define an extended type for Application with jobs field
 interface ApplicationWithJob extends Application {
   jobs?: Job;
 }
 
-const Dashboard = () => {
+const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -154,198 +155,224 @@ const Dashboard = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8 flex-grow">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6">
-          {profile?.role === 'handyman' ? 'لوحة تحكم المعلم' : 'لوحة تحكم العميل'}
-        </h1>
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Sidebar */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex flex-col items-center mb-6 text-center">
+                <Avatar className="h-24 w-24 mb-4">
+                  <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || ''} />
+                  <AvatarFallback>{profile?.full_name?.[0] || '?'}</AvatarFallback>
+                </Avatar>
+                <h2 className="text-xl font-bold">{profile?.full_name || 'المستخدم'}</h2>
+                <p className="text-gray-600 mt-1">{profile?.role === 'handyman' ? 'حرفي' : 'عميل'}</p>
+                
+                {/* Add AdminLink component here */}
+                <div className="mt-3 w-full">
+                  <AdminLink />
+                </div>
+              </div>
+              
+              {/* ... keep existing code (rest of the sidebar) */}
+            </div>
+          </div>
+          
+          {/* Main content */}
+          <div className="lg:col-span-9">
+            <h1 className="text-2xl md:text-3xl font-bold mb-6">
+              {profile?.role === 'handyman' ? 'لوحة تحكم المعلم' : 'لوحة تحكم العميل'}
+            </h1>
 
-        {profile?.role === 'client' ? (
-          // CLIENT DASHBOARD
-          <div className="space-y-8">
-            {/* Jobs Posted Section */}
-            <section>
-              <h2 className="text-xl font-semibold mb-4">المهام التي نشرتها</h2>
-              {jobs.length > 0 ? (
-                <div className="space-y-4">
-                  {jobs.map((job) => (
-                    <Card key={job.id}>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg">{job.title}</CardTitle>
-                          <Badge>{job.category}</Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="mb-4">
-                          <p className="text-gray-700 mb-2"><span className="font-medium">المدينة:</span> {job.city}</p>
-                          <p className="text-gray-700 mb-2"><span className="font-medium">الميزانية:</span> {job.budget} درهم</p>
-                          <p className="text-gray-700"><span className="font-medium">تاريخ النشر:</span> {formatDate(job.created_at)}</p>
-                        </div>
-                        
-                        <div className="flex space-x-2 space-x-reverse">
-                          <Button 
-                            variant="outline" 
-                            onClick={() => navigate(`/jobs/${job.id}`)}
-                            className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                          >
-                            عرض التفاصيل
-                          </Button>
-                          
-                          {/* Add chat button for jobs with accepted applications */}
-                          {applications.some(app => 
-                            app.job_id === job.id && app.status === 'accepted'
-                          ) && (
-                            <Button 
-                              onClick={() => navigate(`/chat/${job.id}`)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <MessageCircle className="h-4 w-4 ml-2" />
-                              المحادثة
-                            </Button>
-                          )}
-                        </div>
+            {profile?.role === 'client' ? (
+              // CLIENT DASHBOARD
+              <div className="space-y-8">
+                {/* Jobs Posted Section */}
+                <section>
+                  <h2 className="text-xl font-semibold mb-4">المهام التي نشرتها</h2>
+                  {jobs.length > 0 ? (
+                    <div className="space-y-4">
+                      {jobs.map((job) => (
+                        <Card key={job.id}>
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                              <CardTitle className="text-lg">{job.title}</CardTitle>
+                              <Badge>{job.category}</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="mb-4">
+                              <p className="text-gray-700 mb-2"><span className="font-medium">المدينة:</span> {job.city}</p>
+                              <p className="text-gray-700 mb-2"><span className="font-medium">الميزانية:</span> {job.budget} درهم</p>
+                              <p className="text-gray-700"><span className="font-medium">تاريخ النشر:</span> {formatDate(job.created_at)}</p>
+                            </div>
+                            
+                            <div className="flex space-x-2 space-x-reverse">
+                              <Button 
+                                variant="outline" 
+                                onClick={() => navigate(`/jobs/${job.id}`)}
+                                className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                              >
+                                عرض التفاصيل
+                              </Button>
+                              
+                              {/* Add chat button for jobs with accepted applications */}
+                              {applications.some(app => 
+                                app.job_id === job.id && app.status === 'accepted'
+                              ) && (
+                                <Button 
+                                  onClick={() => navigate(`/chat/${job.id}`)}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  <MessageCircle className="h-4 w-4 ml-2" />
+                                  المحادثة
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="py-8 text-center text-gray-500">
+                        <p className="mb-4">لم تقم بنشر أي مهام بعد</p>
+                        <Button onClick={() => navigate('/post-job')}>إنشاء مهمة جديدة</Button>
                       </CardContent>
                     </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="py-8 text-center text-gray-500">
-                    <p className="mb-4">لم تقم بنشر أي مهام بعد</p>
-                    <Button onClick={() => navigate('/post-job')}>إنشاء مهمة جديدة</Button>
-                  </CardContent>
-                </Card>
-              )}
-            </section>
-            
-            {/* Applications Received Section */}
-            <section>
-              <h2 className="text-xl font-semibold mb-4">العروض المستلمة</h2>
-              {applications.length > 0 ? (
-                <Card>
-                  <CardContent className="overflow-auto py-6">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>المهمة</TableHead>
-                          <TableHead>اسم الحرفي</TableHead>
-                          <TableHead>السعر المقترح</TableHead>
-                          <TableHead>الحالة</TableHead>
-                          <TableHead>التاريخ</TableHead>
-                          <TableHead>الإجراءات</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {applications.map((app) => (
-                          <TableRow key={app.id}>
-                            <TableCell className="font-medium">
-                              {jobs.find(job => job.id === app.job_id)?.title}
-                            </TableCell>
-                            <TableCell>{app.profiles?.full_name}</TableCell>
-                            <TableCell>{app.proposed_budget} درهم</TableCell>
-                            <TableCell>{getStatusBadge(app.status)}</TableCell>
-                            <TableCell>{formatDate(app.created_at)}</TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2 space-x-reverse">
-                                <Button 
-                                  variant="outline" 
-                                  onClick={() => navigate(`/jobs/${app.job_id}`)}
-                                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                                >
-                                  عرض
-                                </Button>
-                                
-                                {app.status === 'accepted' && (
-                                  <Button 
-                                    onClick={() => navigate(`/chat/${app.job_id}`)}
-                                    size="sm"
-                                    className="bg-green-600 hover:bg-green-700"
-                                  >
-                                    <MessageCircle className="h-4 w-4" />
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card>
-                  <CardContent className="py-8 text-center text-gray-500">
-                    <p>لا توجد عروض مستلمة بعد</p>
-                  </CardContent>
-                </Card>
-              )}
-            </section>
+                  )}
+                </section>
+                
+                {/* Applications Received Section */}
+                <section>
+                  <h2 className="text-xl font-semibold mb-4">العروض المستلمة</h2>
+                  {applications.length > 0 ? (
+                    <Card>
+                      <CardContent className="overflow-auto py-6">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>المهمة</TableHead>
+                              <TableHead>اسم الحرفي</TableHead>
+                              <TableHead>السعر المقترح</TableHead>
+                              <TableHead>الحالة</TableHead>
+                              <TableHead>التاريخ</TableHead>
+                              <TableHead>الإجراءات</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {applications.map((app) => (
+                              <TableRow key={app.id}>
+                                <TableCell className="font-medium">
+                                  {jobs.find(job => job.id === app.job_id)?.title}
+                                </TableCell>
+                                <TableCell>{app.profiles?.full_name}</TableCell>
+                                <TableCell>{app.proposed_budget} درهم</TableCell>
+                                <TableCell>{getStatusBadge(app.status)}</TableCell>
+                                <TableCell>{formatDate(app.created_at)}</TableCell>
+                                <TableCell>
+                                  <div className="flex space-x-2 space-x-reverse">
+                                    <Button 
+                                      variant="outline" 
+                                      onClick={() => navigate(`/jobs/${app.job_id}`)}
+                                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                    >
+                                      عرض
+                                    </Button>
+                                    
+                                    {app.status === 'accepted' && (
+                                      <Button 
+                                        onClick={() => navigate(`/chat/${app.job_id}`)}
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        <MessageCircle className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card>
+                      <CardContent className="py-8 text-center text-gray-500">
+                        <p>لا توجد عروض مستلمة بعد</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </section>
+              </div>
+            ) : (
+              // HANDYMAN DASHBOARD
+              <div className="space-y-8">
+                <section>
+                  <h2 className="text-xl font-semibold mb-4">المهام التي تقدمت لها</h2>
+                  {applications.length > 0 ? (
+                    <Card>
+                      <CardContent className="overflow-auto py-6">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>المهمة</TableHead>
+                              <TableHead>المدينة</TableHead>
+                              <TableHead>السعر المقترح</TableHead>
+                              <TableHead>الحالة</TableHead>
+                              <TableHead>التاريخ</TableHead>
+                              <TableHead>الإجراءات</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {applications.map((app) => (
+                              <TableRow key={app.id}>
+                                <TableCell className="font-medium">{app.jobs?.title || 'المهمة غير متوفرة'}</TableCell>
+                                <TableCell>{app.jobs?.city || '-'}</TableCell>
+                                <TableCell>{app.proposed_budget} درهم</TableCell>
+                                <TableCell>{getStatusBadge(app.status)}</TableCell>
+                                <TableCell>{formatDate(app.created_at)}</TableCell>
+                                <TableCell>
+                                  <div className="flex space-x-2 space-x-reverse">
+                                    <Button 
+                                      variant="outline" 
+                                      onClick={() => navigate(`/jobs/${app.job_id}`)}
+                                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                    >
+                                      عرض
+                                    </Button>
+                                    
+                                    {app.status === 'accepted' && (
+                                      <Button 
+                                        onClick={() => navigate(`/chat/${app.job_id}`)}
+                                        size="sm"
+                                        className="bg-green-600 hover:bg-green-700"
+                                      >
+                                        <MessageCircle className="h-4 w-4" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card>
+                      <CardContent className="py-8 text-center text-gray-500">
+                        <p className="mb-4">لم تتقدم لأي مهام بعد</p>
+                        <Button onClick={() => navigate('/jobs')}>استعرض المهام المتاحة</Button>
+                      </CardContent>
+                    </Card>
+                  )}
+                </section>
+              </div>
+            )}
           </div>
-        ) : (
-          // HANDYMAN DASHBOARD
-          <div className="space-y-8">
-            <section>
-              <h2 className="text-xl font-semibold mb-4">المهام التي تقدمت لها</h2>
-              {applications.length > 0 ? (
-                <Card>
-                  <CardContent className="overflow-auto py-6">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>المهمة</TableHead>
-                          <TableHead>المدينة</TableHead>
-                          <TableHead>السعر المقترح</TableHead>
-                          <TableHead>الحالة</TableHead>
-                          <TableHead>التاريخ</TableHead>
-                          <TableHead>الإجراءات</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {applications.map((app) => (
-                          <TableRow key={app.id}>
-                            <TableCell className="font-medium">{app.jobs?.title || 'المهمة غير متوفرة'}</TableCell>
-                            <TableCell>{app.jobs?.city || '-'}</TableCell>
-                            <TableCell>{app.proposed_budget} درهم</TableCell>
-                            <TableCell>{getStatusBadge(app.status)}</TableCell>
-                            <TableCell>{formatDate(app.created_at)}</TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2 space-x-reverse">
-                                <Button 
-                                  variant="outline" 
-                                  onClick={() => navigate(`/jobs/${app.job_id}`)}
-                                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                                >
-                                  عرض
-                                </Button>
-                                
-                                {app.status === 'accepted' && (
-                                  <Button 
-                                    onClick={() => navigate(`/chat/${app.job_id}`)}
-                                    size="sm"
-                                    className="bg-green-600 hover:bg-green-700"
-                                  >
-                                    <MessageCircle className="h-4 w-4" />
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card>
-                  <CardContent className="py-8 text-center text-gray-500">
-                    <p className="mb-4">لم تتقدم لأي مهام بعد</p>
-                    <Button onClick={() => navigate('/jobs')}>استعرض المهام المتاحة</Button>
-                  </CardContent>
-                </Card>
-              )}
-            </section>
-          </div>
-        )}
+        </div>
       </div>
       
       <Footer />
