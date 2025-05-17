@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader, Send } from 'lucide-react';
@@ -157,34 +158,31 @@ const ChatPage: React.FC = () => {
         async (payload) => {
           console.log('New message received:', payload);
           
-          // Fetch the complete message with sender info
-          const { data, error } = await supabase
-            .from('messages')
-            .select(`
-              id,
-              job_id,
-              sender_id,
-              receiver_id,
-              text,
-              created_at,
-              sender_profile:profiles!sender_id(
-                full_name,
-                avatar_url
-              )
-            `)
-            .eq('id', payload.new.id)
+          // Get the sender profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', payload.new.sender_id)
             .single();
           
-          if (!error && data) {
-            console.log('Fetched message with profile:', data);
-            
-            setMessages(prev => [...prev, data as Message]);
-            
-            // Force scroll to bottom for new messages
-            setTimeout(scrollToBottom, 100);
-          } else {
-            console.error('Error fetching message details:', error);
-          }
+          // Create the new message object
+          const newMessage: Message = {
+            id: payload.new.id,
+            job_id: payload.new.job_id,
+            sender_id: payload.new.sender_id,
+            receiver_id: payload.new.receiver_id,
+            text: payload.new.text,
+            created_at: payload.new.created_at,
+            sender_profile: profileData ? {
+              full_name: profileData.full_name,
+              avatar_url: profileData.avatar_url
+            } : null
+          };
+          
+          setMessages(prev => [...prev, newMessage]);
+          
+          // Force scroll to bottom for new messages
+          setTimeout(scrollToBottom, 100);
         }
       )
       .subscribe();

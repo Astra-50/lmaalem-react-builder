@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from './types';
 
@@ -31,7 +32,8 @@ export async function sendMessage(jobId: string, receiverId: string, text: strin
 // Function to get all messages for a job with proper profile joins
 export async function fetchMessagesForJob(jobId: string) {
   try {
-    const { data, error } = await supabase
+    // First get all messages
+    const { data: messagesData, error: messagesError } = await supabase
       .from('messages')
       .select(`
         id,
@@ -39,27 +41,44 @@ export async function fetchMessagesForJob(jobId: string) {
         sender_id,
         receiver_id,
         text,
-        created_at,
-        sender_profile:profiles!sender_id(
-          full_name,
-          avatar_url
-        )
+        created_at
       `)
       .eq('job_id', jobId)
       .order('created_at', { ascending: true });
     
-    if (error) throw error;
+    if (messagesError) throw messagesError;
     
-    // Transform the data to match our expected Message type
-    const messages = data.map(message => ({
-      id: message.id,
-      job_id: message.job_id,
-      sender_id: message.sender_id,
-      receiver_id: message.receiver_id,
-      text: message.text,
-      created_at: message.created_at,
-      sender_profile: message.sender_profile
-    }));
+    // Then fetch profiles for all unique sender IDs
+    const senderIds = [...new Set(messagesData.map(msg => msg.sender_id))];
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url')
+      .in('id', senderIds);
+    
+    if (profilesError) throw profilesError;
+    
+    // Create a lookup map for profiles
+    const profilesMap = new Map();
+    profilesData?.forEach(profile => {
+      profilesMap.set(profile.id, profile);
+    });
+    
+    // Combine messages with their sender profiles
+    const messages = messagesData.map(message => {
+      const profile = profilesMap.get(message.sender_id);
+      return {
+        id: message.id,
+        job_id: message.job_id,
+        sender_id: message.sender_id,
+        receiver_id: message.receiver_id,
+        text: message.text,
+        created_at: message.created_at,
+        sender_profile: profile ? {
+          full_name: profile.full_name,
+          avatar_url: profile.avatar_url
+        } : null
+      };
+    });
     
     return messages;
   } catch (error) {
