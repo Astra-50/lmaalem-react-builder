@@ -162,8 +162,13 @@ const ChatPage: React.FC = () => {
           const { data, error } = await supabase
             .from('messages')
             .select(`
-              *,
-              sender_profile:sender_id(
+              id,
+              job_id,
+              sender_id,
+              receiver_id,
+              text,
+              created_at,
+              profiles:sender_id(
                 full_name,
                 avatar_url
               )
@@ -181,7 +186,10 @@ const ChatPage: React.FC = () => {
               receiver_id: data.receiver_id,
               text: data.text,
               created_at: data.created_at,
-              sender_profile: data.sender_profile
+              sender_profile: data.profiles ? {
+                full_name: data.profiles.full_name,
+                avatar_url: data.profiles.avatar_url
+              } : null
             };
             
             setMessages(prev => [...prev, newMessage]);
@@ -241,6 +249,7 @@ const ChatPage: React.FC = () => {
     return groups;
   }, {} as { [key: string]: Message[] });
 
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">

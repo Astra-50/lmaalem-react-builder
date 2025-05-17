@@ -35,8 +35,13 @@ export async function fetchMessagesForJob(jobId: string) {
     const { data, error } = await supabase
       .from('messages')
       .select(`
-        *,
-        sender_profile:sender_id(
+        id,
+        job_id,
+        sender_id,
+        receiver_id,
+        text,
+        created_at,
+        profiles:sender_id(
           full_name,
           avatar_url
         )
@@ -54,7 +59,10 @@ export async function fetchMessagesForJob(jobId: string) {
       receiver_id: message.receiver_id,
       text: message.text,
       created_at: message.created_at,
-      sender_profile: message.sender_profile
+      sender_profile: message.profiles ? {
+        full_name: message.profiles.full_name,
+        avatar_url: message.profiles.avatar_url
+      } : null
     }));
     
     return messages as Message[];
