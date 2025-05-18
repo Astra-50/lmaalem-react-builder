@@ -1,66 +1,52 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { supabase } from '@/integrations/supabase/client';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'يرجى إدخال بريد إلكتروني صحيح' }),
-  password: z.string().min(1, { message: 'كلمة المرور مطلوبة' }),
+  password: z.string().min(6, { message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' }),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  
-  const { register, handleSubmit, formState: { errors, isValid } } = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: '',
       password: '',
-    },
-    mode: 'onChange'
+    }
   });
 
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
+      // Simulate login delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (error) throw error;
-      
+      // For demo purposes, we'll just show a success toast
+      console.log('Login data:', data);
       toast.success('تم تسجيل الدخول بنجاح');
-      navigate('/');
-    } catch (error: any) {
+      
+      // In a real implementation, you would handle authentication with Supabase here
+    } catch (error) {
       console.error('Error during login:', error);
-      
-      let errorMessage = 'حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.';
-      
-      if (error.message === 'Invalid login credentials') {
-        errorMessage = 'بيانات تسجيل الدخول غير صحيحة';
-      } else if (error.message === 'Email not confirmed') {
-        errorMessage = 'لم يتم تأكيد البريد الإلكتروني بعد';
-      }
-      
-      toast.error(errorMessage);
+      toast.error('حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مرة أخرى.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50" dir="rtl">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
       
       <div className="flex-grow container mx-auto px-4 py-12">
@@ -98,8 +84,8 @@ const Login: React.FC = () => {
             <div>
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isLoading || !isValid}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-bold"
+                disabled={isLoading}
               >
                 {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
               </button>

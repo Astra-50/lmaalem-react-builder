@@ -1,12 +1,11 @@
 
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
+import { submitJob } from '@/lib/supabase';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -23,10 +22,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const PostJob: React.FC = () => {
-  const [userId, setUserId] = useState<string | null>(null);
-  const navigate = useNavigate();
-  
-  const { register, handleSubmit, formState: { errors, isValid }, reset } = useForm<FormValues>({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
@@ -34,49 +30,25 @@ const PostJob: React.FC = () => {
       city: '',
       category: '',
       budget: ''
-    },
-    mode: 'onChange'
+    }
   });
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        toast.error('يجب تسجيل الدخول لنشر مهمة جديدة');
-        navigate('/login');
-      } else {
-        setUserId(data.session.user.id);
-      }
-    };
-    
-    checkAuth();
-  }, [navigate]);
 
   const cities = ['الدار البيضاء', 'الرباط', 'سلا', 'طنجة'];
   const categories = ['السباكة', 'الكهرباء', 'الدهان', 'النجارة', 'أعمال عامة'];
 
   const mutation = useMutation({
-    mutationFn: async (data: FormValues) => {
-      if (!userId) throw new Error('يجب تسجيل الدخول لنشر مهمة جديدة');
-      
-      const { data: result, error } = await supabase
-        .from('jobs')
-        .insert([{
-          title: data.title,
-          description: data.description,
-          city: data.city,
-          category: data.category,
-          budget: Number(data.budget),
-          user_id: userId
-        }]);
-      
-      if (error) throw error;
-      return result;
+    mutationFn: (data: FormValues) => {
+      return submitJob({
+        title: data.title,
+        description: data.description,
+        city: data.city,
+        category: data.category,
+        budget: Number(data.budget)
+      });
     },
     onSuccess: () => {
       toast.success('تم نشر المهمة بنجاح!');
       reset();
-      navigate('/jobs');
     },
     onError: (error) => {
       console.error('Error submitting job:', error);
@@ -168,8 +140,8 @@ const PostJob: React.FC = () => {
             <div className="text-center">
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={mutation.isPending || !isValid}
+                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-bold"
+                disabled={mutation.isPending}
               >
                 {mutation.isPending ? 'جاري النشر...' : 'نشر المهمة'}
               </button>
