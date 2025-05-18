@@ -23,12 +23,10 @@ type FlatProfileWithRole = {
  */
 export async function makeUserAdminByEmail(email: string): Promise<AdminActionResult> {
   try {
-    // First get the user ID by their email
+    // First find the user profile that matches this email by querying the auth API endpoint
+    // Note: We need to use the RPC function for this since we can't directly query auth.users
     const { data: userData, error: userError } = await supabase
-      .from('auth.users')
-      .select('id')
-      .eq('email', email)
-      .single();
+      .rpc('get_user_id_by_email', { email_input: email });
     
     if (userError || !userData) {
       console.error('Error finding user by email:', userError);
@@ -43,7 +41,7 @@ export async function makeUserAdminByEmail(email: string): Promise<AdminActionRe
     const { error: updateError } = await supabase
       .from('profiles')
       .update({ role: 'admin' })
-      .eq('id', userData.id);
+      .eq('id', userData);
     
     if (updateError) {
       console.error('Error updating user role:', updateError);
@@ -80,8 +78,7 @@ export async function getAllUsers(): Promise<FlatProfileWithRole[]> {
     
     if (error) {
       console.error('Error fetching users:', error);
-      toast({
-        title: 'Error',
+      toast('Error', {
         description: 'Failed to fetch users',
         variant: 'destructive',
       });
@@ -91,8 +88,7 @@ export async function getAllUsers(): Promise<FlatProfileWithRole[]> {
     return data as FlatProfileWithRole[];
   } catch (error) {
     console.error('Unexpected error in getAllUsers:', error);
-    toast({
-      title: 'Error',
+    toast('Error', {
       description: 'An unexpected error occurred',
       variant: 'destructive',
     });
