@@ -4,32 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader } from 'lucide-react';
-
-type Job = {
-  id: string;
-  title: string;
-  city: string;
-  category: string;
-  budget: number;
-  created_at: string;
-};
+import { fetchJobs } from '@/lib/supabase/jobs';
+import { Job } from '@/lib/supabase/types';
 
 const JobsPage: React.FC = () => {
   const navigate = useNavigate();
   
   const { data: jobs, isLoading, error } = useQuery({
     queryKey: ['jobs'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as Job[];
-    }
+    queryFn: fetchJobs
   });
 
   const formatCurrency = (amount: number) => {
