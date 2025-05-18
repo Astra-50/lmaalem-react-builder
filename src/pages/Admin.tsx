@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -33,17 +34,17 @@ const AdminPage: React.FC = () => {
     data: isAdmin, 
     isLoading: isAdminLoading,
     error: adminError
-  } = useQuery(
-    ['isAdmin'],
-    isUserAdmin,
-    {
-      retry: 2, // Retry up to 2 times if the check fails
-      onError: (error) => {
+  } = useQuery({
+    queryKey: ['isAdmin'],
+    queryFn: isUserAdmin,
+    retry: 2, // Retry up to 2 times if the check fails
+    meta: {
+      onError: (error: Error) => {
         console.error('Error checking admin status:', error);
         toast.error('حدث خطأ أثناء التحقق من صلاحياتك. يرجى المحاولة مرة أخرى لاحقًا.');
       }
     }
-  );
+  });
   
   // Redirect non-admin users or on error
   useEffect(() => {
@@ -64,17 +65,17 @@ const AdminPage: React.FC = () => {
     isLoading: jobsLoading,
     error: jobsError,
     refetch: refetchJobs
-  } = useQuery(
-    ['adminJobs'],
-    fetchAllJobs,
-    {
-      enabled: !!isAdmin,
-      onError: (error) => {
+  } = useQuery({
+    queryKey: ['adminJobs'],
+    queryFn: fetchAllJobs,
+    enabled: !!isAdmin,
+    meta: {
+      onError: (error: Error) => {
         console.error('Error fetching jobs:', error);
         toast.error('حدث خطأ أثناء تحميل المهام. يرجى المحاولة مرة أخرى.');
       }
     }
-  );
+  });
   
   // Fetch users with better error handling
   const { 
@@ -82,17 +83,17 @@ const AdminPage: React.FC = () => {
     isLoading: usersLoading,
     error: usersError,
     refetch: refetchUsers
-  } = useQuery(
-    ['adminUsers'],
-    fetchAllUsers,
-    {
-      enabled: !!isAdmin,
-      onError: (error) => {
+  } = useQuery({
+    queryKey: ['adminUsers'],
+    queryFn: fetchAllUsers,
+    enabled: !!isAdmin,
+    meta: {
+      onError: (error: Error) => {
         console.error('Error fetching users:', error);
         toast.error('حدث خطأ أثناء تحميل المستخدمين. يرجى المحاولة مرة أخرى.');
       }
     }
-  );
+  });
   
   // Delete job mutation
   const deleteJobMutation = useMutation({
@@ -221,7 +222,7 @@ const AdminPage: React.FC = () => {
               </div>
             ) : (
               <JobsTable 
-                jobs={jobs}
+                jobs={jobs || []}
                 isLoading={jobsLoading}
                 onDeleteClick={handleDeleteJob}
                 deleteJobMutation={deleteJobMutation}
@@ -248,7 +249,7 @@ const AdminPage: React.FC = () => {
               </div>
             ) : (
               <UsersTable 
-                users={users}
+                users={users || []}
                 isLoading={usersLoading}
                 handleBanToggle={handleBanToggle}
                 handleRoleChange={handleRoleChange}
