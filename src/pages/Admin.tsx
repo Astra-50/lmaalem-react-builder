@@ -31,7 +31,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -70,7 +69,8 @@ const AdminPage: React.FC = () => {
   // Fetch jobs
   const { 
     data: jobs,
-    isLoading: jobsLoading
+    isLoading: jobsLoading,
+    refetch: refetchJobs
   } = useQuery({
     queryKey: ['adminJobs'],
     queryFn: fetchAllJobs,
@@ -80,7 +80,8 @@ const AdminPage: React.FC = () => {
   // Fetch users
   const { 
     data: users,
-    isLoading: usersLoading
+    isLoading: usersLoading,
+    refetch: refetchUsers
   } = useQuery({
     queryKey: ['adminUsers'],
     queryFn: fetchAllUsers,
@@ -92,11 +93,14 @@ const AdminPage: React.FC = () => {
     mutationFn: (jobId: string) => deleteJob(jobId),
     onSuccess: () => {
       setIsDeleteDialogOpen(false);
+      setJobToDelete(null);
       toast.success('تم حذف المهمة بنجاح');
+      refetchJobs(); // Explicitly refetch jobs
       queryClient.invalidateQueries({ queryKey: ['adminJobs'] });
     },
-    onError: () => {
-      toast.error('حدث خطأ أثناء حذف المهمة');
+    onError: (error) => {
+      console.error('Error deleting job:', error);
+      toast.error(`حدث خطأ أثناء حذف المهمة: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
     }
   });
   
@@ -106,10 +110,12 @@ const AdminPage: React.FC = () => {
       updateUserBanStatus(userId, banned),
     onSuccess: () => {
       toast.success('تم تحديث حالة المستخدم بنجاح');
+      refetchUsers(); // Explicitly refetch users
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
     },
-    onError: () => {
-      toast.error('حدث خطأ أثناء تحديث حالة المستخدم');
+    onError: (error) => {
+      console.error('Error updating ban status:', error);
+      toast.error(`حدث خطأ أثناء تحديث حالة المستخدم: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
     }
   });
   
@@ -119,10 +125,12 @@ const AdminPage: React.FC = () => {
       updateUserRole(userId, role),
     onSuccess: () => {
       toast.success('تم تحديث دور المستخدم بنجاح');
+      refetchUsers(); // Explicitly refetch users
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
     },
-    onError: () => {
-      toast.error('حدث خطأ أثناء تحديث دور المستخدم');
+    onError: (error) => {
+      console.error('Error updating role:', error);
+      toast.error(`حدث خطأ أثناء تحديث دور المستخدم: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
     }
   });
   
@@ -211,8 +219,13 @@ const AdminPage: React.FC = () => {
                             variant="destructive"
                             size="sm"
                             onClick={() => handleDeleteJob(job.id)}
+                            disabled={deleteJobMutation.isPending}
                           >
-                            <Trash2 className="h-4 w-4 ml-1" />
+                            {deleteJobMutation.isPending && jobToDelete === job.id ? (
+                              <Loader className="h-4 w-4 animate-spin ml-1" />
+                            ) : (
+                              <Trash2 className="h-4 w-4 ml-1" />
+                            )}
                             حذف
                           </Button>
                         </TableCell>
@@ -261,6 +274,7 @@ const AdminPage: React.FC = () => {
                           <Select
                             defaultValue={user.role}
                             onValueChange={(value) => handleRoleChange(user.id, value)}
+                            disabled={updateRoleMutation.isPending}
                           >
                             <SelectTrigger className="w-32">
                               <SelectValue />
@@ -286,18 +300,16 @@ const AdminPage: React.FC = () => {
                             variant={user.banned ? "default" : "destructive"}
                             size="sm"
                             onClick={() => handleBanToggle(user.id, !!user.banned)}
+                            disabled={updateBanStatusMutation.isPending}
                           >
-                            {user.banned ? (
-                              <>
-                                <UserX className="h-4 w-4 ml-1" />
-                                إلغاء الحظر
-                              </>
+                            {updateBanStatusMutation.isPending ? (
+                              <Loader className="h-4 w-4 ml-1" />
+                            ) : user.banned ? (
+                              <UserX className="h-4 w-4 ml-1" />
                             ) : (
-                              <>
-                                <Ban className="h-4 w-4 ml-1" />
-                                حظر
-                              </>
+                              <Ban className="h-4 w-4 ml-1" />
                             )}
+                            {user.banned ? 'إلغاء الحظر' : 'حظر'}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -327,6 +339,7 @@ const AdminPage: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={deleteJobMutation.isPending}
             >
               إلغاء
             </Button>
@@ -336,7 +349,7 @@ const AdminPage: React.FC = () => {
               disabled={deleteJobMutation.isPending}
             >
               {deleteJobMutation.isPending ? (
-                <Loader className="h-4 w-4 animate-spin" />
+                <Loader className="h-4 w-4 animate-spin ml-1" />
               ) : (
                 'تأكيد الحذف'
               )}
