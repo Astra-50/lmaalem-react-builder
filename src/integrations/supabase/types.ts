@@ -125,6 +125,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          banned: boolean | null
           bio: string | null
           category: string | null
           city: string | null
@@ -137,6 +138,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          banned?: boolean | null
           bio?: string | null
           category?: string | null
           city?: string | null
@@ -149,6 +151,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          banned?: boolean | null
           bio?: string | null
           category?: string | null
           city?: string | null
@@ -166,7 +169,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
