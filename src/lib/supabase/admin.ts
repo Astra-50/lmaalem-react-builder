@@ -103,3 +103,40 @@ export async function updateUserRole(userId: string, role: string) {
   
   return true;
 }
+
+// Function to make a specific user admin by email
+export async function makeUserAdminByEmail(email: string) {
+  try {
+    // First get the user ID from their email
+    const { data: userData, error: userError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+    
+    if (userError) {
+      console.error('Error finding user by email:', userError);
+      throw userError;
+    }
+    
+    if (!userData) {
+      throw new Error(`User with email ${email} not found`);
+    }
+    
+    // Then update their role to admin
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: 'admin' })
+      .eq('id', userData.id);
+    
+    if (error) {
+      console.error('Error updating user to admin:', error);
+      throw error;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in makeUserAdminByEmail:', error);
+    throw error;
+  }
+}
