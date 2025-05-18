@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -34,15 +33,17 @@ const AdminPage: React.FC = () => {
     data: isAdmin, 
     isLoading: isAdminLoading,
     error: adminError
-  } = useQuery({
-    queryKey: ['isAdmin'],
-    queryFn: isUserAdmin,
-    retry: 2, // Retry up to 2 times if the check fails
-    onError: (error) => {
-      console.error('Error checking admin status:', error);
-      toast.error('حدث خطأ أثناء التحقق من صلاحياتك. يرجى المحاولة مرة أخرى لاحقًا.');
+  } = useQuery(
+    ['isAdmin'],
+    isUserAdmin,
+    {
+      retry: 2, // Retry up to 2 times if the check fails
+      onError: (error) => {
+        console.error('Error checking admin status:', error);
+        toast.error('حدث خطأ أثناء التحقق من صلاحياتك. يرجى المحاولة مرة أخرى لاحقًا.');
+      }
     }
-  });
+  );
   
   // Redirect non-admin users or on error
   useEffect(() => {
@@ -63,15 +64,17 @@ const AdminPage: React.FC = () => {
     isLoading: jobsLoading,
     error: jobsError,
     refetch: refetchJobs
-  } = useQuery({
-    queryKey: ['adminJobs'],
-    queryFn: fetchAllJobs,
-    enabled: !!isAdmin,
-    onError: (error) => {
-      console.error('Error fetching jobs:', error);
-      toast.error('حدث خطأ أثناء تحميل المهام. يرجى المحاولة مرة أخرى.');
+  } = useQuery(
+    ['adminJobs'],
+    fetchAllJobs,
+    {
+      enabled: !!isAdmin,
+      onError: (error) => {
+        console.error('Error fetching jobs:', error);
+        toast.error('حدث خطأ أثناء تحميل المهام. يرجى المحاولة مرة أخرى.');
+      }
     }
-  });
+  );
   
   // Fetch users with better error handling
   const { 
@@ -79,15 +82,17 @@ const AdminPage: React.FC = () => {
     isLoading: usersLoading,
     error: usersError,
     refetch: refetchUsers
-  } = useQuery({
-    queryKey: ['adminUsers'],
-    queryFn: fetchAllUsers,
-    enabled: !!isAdmin,
-    onError: (error) => {
-      console.error('Error fetching users:', error);
-      toast.error('حدث خطأ أثناء تحميل المستخدمين. يرجى المحاولة مرة أخرى.');
+  } = useQuery(
+    ['adminUsers'],
+    fetchAllUsers,
+    {
+      enabled: !!isAdmin,
+      onError: (error) => {
+        console.error('Error fetching users:', error);
+        toast.error('حدث خطأ أثناء تحميل المستخدمين. يرجى المحاولة مرة أخرى.');
+      }
     }
-  });
+  );
   
   // Delete job mutation
   const deleteJobMutation = useMutation({
