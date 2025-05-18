@@ -87,45 +87,9 @@ export type Database = {
         }
         Relationships: []
       }
-      messages: {
-        Row: {
-          created_at: string
-          id: string
-          job_id: string
-          receiver_id: string
-          sender_id: string
-          text: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          job_id: string
-          receiver_id: string
-          sender_id: string
-          text: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          job_id?: string
-          receiver_id?: string
-          sender_id?: string
-          text?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "jobs"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           avatar_url: string | null
-          banned: boolean | null
           bio: string | null
           category: string | null
           city: string | null
@@ -138,7 +102,6 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
-          banned?: boolean | null
           bio?: string | null
           category?: string | null
           city?: string | null
@@ -151,7 +114,6 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
-          banned?: boolean | null
           bio?: string | null
           category?: string | null
           city?: string | null
@@ -169,10 +131,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_admin: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never

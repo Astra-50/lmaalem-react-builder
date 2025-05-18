@@ -14,8 +14,6 @@ import JobsPage from "./pages/jobs/index";
 import JobDetailPage from "./pages/jobs/[id]";
 import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
-import ChatPage from "./pages/chat/[jobId]";
-import AdminPage from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -35,8 +33,6 @@ const App = () => (
           <Route path="/handyman/:id" element={<HandymanProfile />} />
           <Route path="/jobs" element={<JobsPage />} />
           <Route path="/jobs/:id" element={<JobDetailPage />} />
-          <Route path="/chat/:jobId" element={<ChatPage />} />
-          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
