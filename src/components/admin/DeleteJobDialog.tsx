@@ -25,7 +25,11 @@ const DeleteJobDialog: React.FC<DeleteJobDialogProps> = ({
   isPending
 }) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      // Prevent closing dialog while delete operation is in progress
+      if (isPending && !open) return;
+      onOpenChange(open);
+    }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>تأكيد الحذف</DialogTitle>
@@ -47,7 +51,10 @@ const DeleteJobDialog: React.FC<DeleteJobDialogProps> = ({
             disabled={isPending}
           >
             {isPending ? (
-              <Loader className="h-4 w-4 animate-spin ml-1" />
+              <>
+                <Loader className="h-4 w-4 animate-spin ml-1" />
+                جاري الحذف...
+              </>
             ) : (
               'تأكيد الحذف'
             )}

@@ -2,18 +2,21 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { isUserAdmin } from '@/lib/supabase/admin';
+import { Loader } from 'lucide-react';
 
 const AdminLink: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
       try {
         const admin = await isUserAdmin();
         setIsAdmin(admin);
-      } catch (error) {
-        console.error('Error checking admin status:', error);
+      } catch (err) {
+        console.error('Error checking admin status:', err);
+        setError(err instanceof Error ? err : new Error('Unknown error'));
         setIsAdmin(false);
       } finally {
         setIsLoading(false);
@@ -23,7 +26,15 @@ const AdminLink: React.FC = () => {
     checkAdmin();
   }, []);
 
-  if (isLoading || !isAdmin) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center p-2">
+        <Loader className="h-4 w-4 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error || !isAdmin) {
     return null;
   }
 

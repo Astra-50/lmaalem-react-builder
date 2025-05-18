@@ -6,24 +6,27 @@ import { toast } from '@/components/ui/sonner';
 // Function to check if current user is an admin
 export async function isUserAdmin() {
   try {
-    const { data: session } = await supabase.auth.getSession();
+    // First get the current user
+    const { data: userData, error: userError } = await supabase.auth.getUser();
     
-    if (!session.session) {
+    if (userError || !userData.user) {
+      console.error('Error getting current user:', userError);
       return false;
     }
     
-    const { data, error } = await supabase
+    // Then fetch the user profile to check role
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('role')
-      .eq('id', session.session.user.id)
+      .eq('id', userData.user.id)
       .single();
     
-    if (error) {
-      console.error('Error checking user role:', error);
+    if (profileError) {
+      console.error('Error checking user role:', profileError);
       return false;
     }
     
-    return data.role === 'admin';
+    return profile?.role === 'admin';
   } catch (error) {
     console.error('Error in isUserAdmin:', error);
     return false;

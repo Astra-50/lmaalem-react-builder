@@ -29,40 +29,64 @@ const AdminPage: React.FC = () => {
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
-  // Check if user is admin
-  const { data: isAdmin, isLoading: isAdminLoading } = useQuery({
+  // Check if user is admin with better error handling
+  const { 
+    data: isAdmin, 
+    isLoading: isAdminLoading,
+    error: adminError
+  } = useQuery({
     queryKey: ['isAdmin'],
-    queryFn: isUserAdmin
+    queryFn: isUserAdmin,
+    retry: 2, // Retry up to 2 times if the check fails
+    onError: (error) => {
+      console.error('Error checking admin status:', error);
+      toast.error('حدث خطأ أثناء التحقق من صلاحياتك. يرجى المحاولة مرة أخرى لاحقًا.');
+    }
   });
   
-  // Redirect non-admin users
+  // Redirect non-admin users or on error
   useEffect(() => {
-    if (!isAdminLoading && isAdmin === false) {
-      toast.error('ليس لديك صلاحية الوصول');
-      navigate('/');
+    if (!isAdminLoading) {
+      if (adminError) {
+        toast.error('حدث خطأ أثناء التحقق من صلاحياتك. يرجى المحاولة مرة أخرى.');
+        navigate('/');
+      } else if (isAdmin === false) {
+        toast.error('ليس لديك صلاحية الوصول للوحة التحكم.');
+        navigate('/');
+      }
     }
-  }, [isAdmin, isAdminLoading, navigate]);
+  }, [isAdmin, isAdminLoading, adminError, navigate]);
   
-  // Fetch jobs
+  // Fetch jobs with better error handling
   const { 
     data: jobs,
     isLoading: jobsLoading,
+    error: jobsError,
     refetch: refetchJobs
   } = useQuery({
     queryKey: ['adminJobs'],
     queryFn: fetchAllJobs,
     enabled: !!isAdmin,
+    onError: (error) => {
+      console.error('Error fetching jobs:', error);
+      toast.error('حدث خطأ أثناء تحميل المهام. يرجى المحاولة مرة أخرى.');
+    }
   });
   
-  // Fetch users
+  // Fetch users with better error handling
   const { 
     data: users,
     isLoading: usersLoading,
+    error: usersError,
     refetch: refetchUsers
   } = useQuery({
     queryKey: ['adminUsers'],
     queryFn: fetchAllUsers,
     enabled: !!isAdmin,
+    onError: (error) => {
+      console.error('Error fetching users:', error);
+      toast.error('حدث خطأ أثناء تحميل المستخدمين. يرجى المحاولة مرة أخرى.');
+    }
   });
   
   // Delete job mutation
@@ -133,10 +157,30 @@ const AdminPage: React.FC = () => {
     updateRoleMutation.mutate({ userId, role: newRole });
   };
   
+  // Improved loading state with message
   if (isAdminLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader className="h-10 w-10 animate-spin text-primary" />
+      <div className="min-h-screen flex flex-col items-center justify-center" dir="rtl">
+        <Loader className="h-10 w-10 animate-spin text-primary mb-4" />
+        <p className="text-lg text-gray-600">جاري التحقق من الصلاحيات...</p>
+      </div>
+    );
+  }
+  
+  // Error handling for admin check
+  if (adminError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4" dir="rtl">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+          <h2 className="text-xl font-semibold text-red-700 mb-2">حدث خطأ</h2>
+          <p className="text-gray-700 mb-4">لم نتمكن من التحقق من صلاحياتك. يرجى المحاولة مرة أخرى لاحقًا.</p>
+          <button 
+            onClick={() => navigate('/')} 
+            className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90 transition-colors"
+          >
+            العودة للصفحة الرئيسية
+          </button>
+        </div>
       </div>
     );
   }
@@ -159,13 +203,26 @@ const AdminPage: React.FC = () => {
         <TabsContent value="jobs">
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-2xl font-semibold mb-4">جميع المهام</h2>
-            <JobsTable 
-              jobs={jobs}
-              isLoading={jobsLoading}
-              onDeleteClick={handleDeleteJob}
-              deleteJobMutation={deleteJobMutation}
-              jobToDelete={jobToDelete}
-            />
+            
+            {jobsError ? (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p className="text-red-700">حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.</p>
+                <button 
+                  onClick={() => refetchJobs()} 
+                  className="mt-2 text-primary underline"
+                >
+                  إعادة المحاولة
+                </button>
+              </div>
+            ) : (
+              <JobsTable 
+                jobs={jobs}
+                isLoading={jobsLoading}
+                onDeleteClick={handleDeleteJob}
+                deleteJobMutation={deleteJobMutation}
+                jobToDelete={jobToDelete}
+              />
+            )}
           </div>
         </TabsContent>
         
@@ -173,14 +230,27 @@ const AdminPage: React.FC = () => {
         <TabsContent value="users">
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-2xl font-semibold mb-4">جميع المستخدمين</h2>
-            <UsersTable 
-              users={users}
-              isLoading={usersLoading}
-              handleBanToggle={handleBanToggle}
-              handleRoleChange={handleRoleChange}
-              updateBanStatusMutation={updateBanStatusMutation}
-              updateRoleMutation={updateRoleMutation}
-            />
+            
+            {usersError ? (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p className="text-red-700">حدث خطأ أثناء تحميل بيانات المستخدمين. يرجى المحاولة مرة أخرى.</p>
+                <button 
+                  onClick={() => refetchUsers()} 
+                  className="mt-2 text-primary underline"
+                >
+                  إعادة المحاولة
+                </button>
+              </div>
+            ) : (
+              <UsersTable 
+                users={users}
+                isLoading={usersLoading}
+                handleBanToggle={handleBanToggle}
+                handleRoleChange={handleRoleChange}
+                updateBanStatusMutation={updateBanStatusMutation}
+                updateRoleMutation={updateRoleMutation}
+              />
+            )}
           </div>
         </TabsContent>
       </Tabs>
