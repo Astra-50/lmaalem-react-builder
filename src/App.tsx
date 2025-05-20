@@ -9,7 +9,13 @@ import NotFound from "./pages/NotFound";
 import PostJob from "./pages/PostJob";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import HandymanProfile from "./pages/HandymanProfile";
+import HandymanProfile from "./pages/handyman/[id]";
+import JobsPage from "./pages/jobs/index";
+import JobDetailPage from "./pages/jobs/[id]";
+import Profile from "./pages/Profile";
+import Dashboard from "./pages/Dashboard";
+import ChatPage from "./pages/chat/[jobId]";
+import AdminPage from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +30,13 @@ const App = () => (
           <Route path="/post-job" element={<PostJob />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/handyman/:id" element={<HandymanProfile />} />
+          <Route path="/jobs" element={<JobsPage />} />
+          <Route path="/jobs/:id" element={<JobDetailPage />} />
+          <Route path="/chat/:jobId" element={<ChatPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
