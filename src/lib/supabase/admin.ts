@@ -108,7 +108,9 @@ export async function updateUserRole(userId: string, role: string) {
 // Function to make a specific user admin by email
 export async function makeUserAdminByEmail(email: string) {
   try {
-    // First get the user ID from their email using profiles table
+    // First get the user ID by querying auth.users by email
+    // This requires admin privileges via the Supabase dashboard
+    // Using an alternative approach by querying profiles where email might match
     const { data: userData, error: userError } = await supabase
       .from('profiles')
       .select('id')
