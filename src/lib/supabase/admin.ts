@@ -1,7 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from './types';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 // Function to check if current user is an admin
 export async function isUserAdmin() {
@@ -117,19 +117,13 @@ export async function makeUserAdminByEmail(email: string) {
     
     if (userError) {
       console.error('Error finding user by email:', userError);
-      toast({
-        title: 'Error',
-        description: `Error finding user: ${userError.message}`,
-      });
+      toast('Error finding user: ' + userError.message);
       throw userError;
     }
     
     if (!userData) {
       const errorMsg = `User with email ${email} not found`;
-      toast({
-        title: 'Error',
-        description: errorMsg,
-      });
+      toast(errorMsg);
       throw new Error(errorMsg);
     }
     

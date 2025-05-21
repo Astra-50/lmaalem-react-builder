@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -40,7 +41,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 import { Loader, Trash2, UserX, Ban } from 'lucide-react';
 import { Job, UserProfile } from '@/lib/supabase/types';
 
@@ -60,9 +61,7 @@ const AdminPage: React.FC = () => {
   // Redirect non-admin users
   useEffect(() => {
     if (!isAdminLoading && isAdmin === false) {
-      toast({
-        description: 'ليس لديك صلاحية الوصول',
-      });
+      toast('ليس لديك صلاحية الوصول');
       navigate('/');
     }
   }, [isAdmin, isAdminLoading, navigate]);
@@ -92,15 +91,11 @@ const AdminPage: React.FC = () => {
     mutationFn: (jobId: string) => deleteJob(jobId),
     onSuccess: () => {
       setIsDeleteDialogOpen(false);
-      toast({
-        description: 'تم حذف المهمة بنجاح',
-      });
+      toast('تم حذف المهمة بنجاح');
       queryClient.invalidateQueries({ queryKey: ['adminJobs'] });
     },
     onError: () => {
-      toast({
-        description: 'حدث خطأ أثناء حذف المهمة',
-      });
+      toast('حدث خطأ أثناء حذف المهمة');
     }
   });
   
@@ -109,15 +104,11 @@ const AdminPage: React.FC = () => {
     mutationFn: ({ userId, banned }: { userId: string; banned: boolean }) => 
       updateUserBanStatus(userId, banned),
     onSuccess: () => {
-      toast({
-        description: 'تم تحديث حالة المستخدم بنجاح',
-      });
+      toast('تم تحديث حالة المستخدم بنجاح');
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
     },
     onError: () => {
-      toast({
-        description: 'حدث خطأ أثناء تحديث حالة المستخدم',
-      });
+      toast('حدث خطأ أثناء تحديث حالة المستخدم');
     }
   });
   
@@ -126,15 +117,11 @@ const AdminPage: React.FC = () => {
     mutationFn: ({ userId, role }: { userId: string; role: string }) => 
       updateUserRole(userId, role),
     onSuccess: () => {
-      toast({
-        description: 'تم تحديث دور المستخدم بنجاح',
-      });
+      toast('تم تحديث دور المستخدم بنجاح');
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
     },
     onError: () => {
-      toast({
-        description: 'حدث خطأ أثناء تحديث دور المستخدم',
-      });
+      toast('حدث خطأ أثناء تحديث دور المستخدم');
     }
   });
   
