@@ -106,14 +106,15 @@ export async function updateUserRole(userId: string, role: string) {
 }
 
 // Function to make a specific user admin by email
+// Note: This function requires admin access via a server-side Edge Function
+// as client-side code cannot directly query auth.users table
 export async function makeUserAdminByEmail(email: string) {
   try {
-    // First get the user ID by querying auth.users by email
-    // This requires admin privileges via the Supabase dashboard
-    // Using an alternative approach by querying profiles where email might match
+    // We need to find users that might have this email in the profiles table
+    // This is a temporary workaround since we can't directly query auth.users from client-side
     const { data: userData, error: userError } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, email')
       .eq('email', email)
       .maybeSingle();
     
