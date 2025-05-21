@@ -105,45 +105,6 @@ export async function updateUserRole(userId: string, role: string) {
   return true;
 }
 
-// Function to make a specific user admin by email
-// Note: This function requires admin access via a server-side Edge Function
-// as client-side code cannot directly query auth.users table
-export async function makeUserAdminByEmail(email: string) {
-  try {
-    // We need to find users that might have this email in the profiles table
-    // This is a temporary workaround since we can't directly query auth.users from client-side
-    const { data: userData, error: userError } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .eq('email', email)
-      .maybeSingle();
-    
-    if (userError) {
-      console.error('Error finding user by email:', userError);
-      toast('Error finding user: ' + userError.message);
-      throw userError;
-    }
-    
-    if (!userData) {
-      const errorMsg = `User with email ${email} not found`;
-      toast(errorMsg);
-      throw new Error(errorMsg);
-    }
-    
-    // Then update their role to admin
-    const { error } = await supabase
-      .from('profiles')
-      .update({ role: 'admin' })
-      .eq('id', userData.id);
-    
-    if (error) {
-      console.error('Error updating user to admin:', error);
-      throw error;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error in makeUserAdminByEmail:', error);
-    throw error;
-  }
-}
+// Note: The makeUserAdminByEmail function has been removed as it was causing 
+// TypeScript errors due to trying to query profiles by email, which doesn't exist.
+// To implement this functionality properly, a server-side Edge Function would be needed.
