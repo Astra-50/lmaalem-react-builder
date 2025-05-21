@@ -1,4 +1,10 @@
 
-import { useToast, toast } from "@/hooks/use-toast";
+// Re-export the toast components from sonner
+import { toast } from 'sonner';
 
-export { useToast, toast };
+export { toast };
+
+// For backwards compatibility
+export const useToast = () => {
+  return { toast };
+};

@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from './types';
+import { toast } from '@/components/ui/sonner';
 
 // Function to check if current user is an admin
 export async function isUserAdmin() {
@@ -107,7 +108,7 @@ export async function updateUserRole(userId: string, role: string) {
 // Function to make a specific user admin by email
 export async function makeUserAdminByEmail(email: string) {
   try {
-    // First get the user ID from their email
+    // First get the user ID from their email using profiles table
     const { data: userData, error: userError } = await supabase
       .from('profiles')
       .select('id')
@@ -116,11 +117,20 @@ export async function makeUserAdminByEmail(email: string) {
     
     if (userError) {
       console.error('Error finding user by email:', userError);
+      toast({
+        title: 'Error',
+        description: `Error finding user: ${userError.message}`,
+      });
       throw userError;
     }
     
     if (!userData) {
-      throw new Error(`User with email ${email} not found`);
+      const errorMsg = `User with email ${email} not found`;
+      toast({
+        title: 'Error',
+        description: errorMsg,
+      });
+      throw new Error(errorMsg);
     }
     
     // Then update their role to admin

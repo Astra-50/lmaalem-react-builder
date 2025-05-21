@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -31,7 +30,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -62,7 +60,9 @@ const AdminPage: React.FC = () => {
   // Redirect non-admin users
   useEffect(() => {
     if (!isAdminLoading && isAdmin === false) {
-      toast.error('ليس لديك صلاحية الوصول');
+      toast({
+        description: 'ليس لديك صلاحية الوصول',
+      });
       navigate('/');
     }
   }, [isAdmin, isAdminLoading, navigate]);
@@ -92,11 +92,15 @@ const AdminPage: React.FC = () => {
     mutationFn: (jobId: string) => deleteJob(jobId),
     onSuccess: () => {
       setIsDeleteDialogOpen(false);
-      toast.success('تم حذف المهمة بنجاح');
+      toast({
+        description: 'تم حذف المهمة بنجاح',
+      });
       queryClient.invalidateQueries({ queryKey: ['adminJobs'] });
     },
     onError: () => {
-      toast.error('حدث خطأ أثناء حذف المهمة');
+      toast({
+        description: 'حدث خطأ أثناء حذف المهمة',
+      });
     }
   });
   
@@ -105,11 +109,15 @@ const AdminPage: React.FC = () => {
     mutationFn: ({ userId, banned }: { userId: string; banned: boolean }) => 
       updateUserBanStatus(userId, banned),
     onSuccess: () => {
-      toast.success('تم تحديث حالة المستخدم بنجاح');
+      toast({
+        description: 'تم تحديث حالة المستخدم بنجاح',
+      });
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
     },
     onError: () => {
-      toast.error('حدث خطأ أثناء تحديث حالة المستخدم');
+      toast({
+        description: 'حدث خطأ أثناء تحديث حالة المستخدم',
+      });
     }
   });
   
@@ -118,11 +126,15 @@ const AdminPage: React.FC = () => {
     mutationFn: ({ userId, role }: { userId: string; role: string }) => 
       updateUserRole(userId, role),
     onSuccess: () => {
-      toast.success('تم تحديث دور المستخدم بنجاح');
+      toast({
+        description: 'تم تحديث دور المستخدم بنجاح',
+      });
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
     },
     onError: () => {
-      toast.error('حدث خطأ أثناء تحديث دور المستخدم');
+      toast({
+        description: 'حدث خطأ أثناء تحديث دور المستخدم',
+      });
     }
   });
   
